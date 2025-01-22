@@ -215,6 +215,7 @@ else
   echo "$cmd libgl$dev" >>$log
   $cmd libgl$dev >>$log
   $cmd libGL$dev >>$log
+  $cmd libgl1-mesa$dev >>$log # Ubuntu 24.04.1 LTS
 fi
 
 ## libGLU
@@ -226,6 +227,7 @@ else
   echo "$cmd libglu$dev" >>$log
   $cmd libglu$dev >>$log
   $cmd libGLU$dev >>$log
+  $cmd libgl1-mesa$dev >>$log # Ubuntu 24.04.1 LTS
 fi
 
 ## libX11
@@ -260,7 +262,7 @@ fi
 
 ## libgif
 pfx=/usr/local
-if [ -f $pfx/lib/libgif.$sfx ]; then
+if [ -f $pfx/lib/libgif.$sfx -o -f $pfx/lib/x86_64-linux-gnu/libgif.$dyl ]; then
   echo "$p: libgif !"
 else
   echo "$p: get libgif..."
@@ -270,7 +272,7 @@ fi
 
 ## libpng
 pfx=/usr/local
-if [ -f $pfx/lib/libpng.$sfx ]; then
+if [ -f $pfx/lib/libpng.$sfx -o -f $pfx/lib/x86_64-linux-gnu/libpng.$dyl ]; then
   echo "$p: libpng !"
 else
   echo "$p: get libpng..."
@@ -280,7 +282,7 @@ fi
 
 ## libjpeg
 pfx=/usr/local
-if [ -f $pfx/lib/libjpeg.$sfx ]; then
+if [ -f $pfx/lib/libjpeg.$sfx -o -f $pfx/lib/x86_64-linux-gnu/libjpeg.$dyl ]; then
   echo "$p: libjpeg !"
 else
   echo "$p: get libjpeg..."
@@ -290,7 +292,7 @@ fi
 
 ## libtiff
 pfx=/usr/local
-if [ -f $pfx/lib/libtiff.$sfx ]; then
+if [ -f $pfx/lib/libtiff.$sfx -o -f $pfx/lib/x86_64-linux-gnu/libtiff.so ]; then
   echo "$p: libtiff !"
 else
   echo "$p: get libtiff..."
@@ -300,7 +302,7 @@ fi
 
 ## libfreetype
 pfx=$(freetype-config --prefix)
-if [ -f $pfx/lib/libfreetype.$sfx ]; then
+if [ -f $pfx/lib/libfreetype.$sfx -o -f /usr/local/lib/x86_64-linux-gnu/libfreetype.$dyl ]; then
   echo "$p: freetype !"
 else
   echo "$p: get freetype..."
