@@ -90,7 +90,7 @@ if ENABLE_OCAML
 AI_LIB    = -L$(SRC)/ai    $(SRC)/ai/libai.a @OCAML_LIB@ -lasmrun $(SRC)/ai/libai.a -lunix -lasmrun
 endif
 
-CORE_LIBS = $(BASE_LIB) $(GUI_LIB) $(WORLD_LIB) $(MODEL_LIB) $(2D_LIB) $(3D_LIB) $(NET_LIB) $(TOOL_LIB) $(VNC_LIB) $(UBIT_LIB) $(AI_LIB)
+CORE_LIBS = $(GUI_LIB) $(WORLD_LIB) $(2D_LIB) $(3D_LIB) $(NET_LIB) $(TOOL_LIB) $(VNC_LIB) $(UBIT_LIB) $(AI_LIB) $(BASE_LIB) $(MODEL_LIB)
 
 #
 # embedded libraries

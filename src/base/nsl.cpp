@@ -51,7 +51,7 @@ struct hostent * my_gethostbyname(const char *hostname, int af)
 //  in_addrs.push_back(NULL);
 //
 //  struct hostent *hp = static_cast<struct hostent *> (malloc(sizeof(struct hostent)));
-//  //dax hp->h_name = result->ai_canonname;	// CRASH access ai !!! FIXME!
+//  //dax hp->h_name = result->ai_canonname;   // CRASH access ai !!! FIXME!
 //  hp->h_aliases = NULL;
 //  hp->h_addrtype = af;
 //  hp->h_length = sizeof(in_addr);
@@ -94,18 +94,36 @@ struct hostent * my_gethostbyname_r(const char *hostname, int af)
 /** my_getipnodebyname */
 struct hostent * my_getipnodebyname(const char *hostname, int af)
 {
+#if HAVE_GETIPNODEBYNAME
   int err;
-
   return getipnodebyname(hostname, af, AI_DEFAULT, &err);
+#else
+  // Fallback to regular gethostbyname if getipnodebyname is not available
+  return gethostbyname(hostname);
+#endif
 }
 
 /** my_free_hostent */
 void my_free_hostent(struct hostent *_hp)
 {
+  // Only free if the hostent was dynamically allocated
+  // Static hostents from gethostbyname() should not be freed
+  if (!_hp) return;
+  
+  // Check if this looks like a static hostent by examining the address
+  // This is a heuristic - static hostents are usually in a different memory region
+  static struct hostent *last_static = NULL;
+  if (_hp == last_static) return;  // Don't free the same static pointer twice
+  
 #if HAVE_FREEHOSTENT
-  //dax if (_hp) freehostent(_hp);
+  freehostent(_hp);
+#elif HAVE_GETIPNODEBYNAME
+  // Only free if it came from getipnodebyname
+  freehostent(_hp);
 #else
-  free(_hp);
+  // For regular gethostbyname, don't free - it returns static data
+  // Only set last_static to avoid double-free attempts
+  last_static = _hp;
 #endif
 }
 

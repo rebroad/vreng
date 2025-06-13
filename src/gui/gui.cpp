@@ -24,7 +24,7 @@
 //  VREng Project / Ubit GUI
 //  Authors: Eric Lecolinet and Philippe Dax
 //---------------------------------------------------------------------------
-#include "vreng.hpp"
+#include "ubit/ubit.hpp"
 #include "gui.hpp"
 #include "widgets.hpp"	// widgets
 #include "panels.hpp"	// panels
@@ -43,8 +43,6 @@
 #include "channel.hpp"	// Channel
 #include "vac.hpp"	// resolveWorldUrl, getUrlAndChannel
 #include "theme.hpp"	// g.theme
-
-#include "ubit/ubit.hpp"
 
 using namespace ubit;
 

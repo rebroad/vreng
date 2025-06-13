@@ -5,17 +5,17 @@
 # Check and install needed requirements from scratch
 #
 # Note 1:
-#       This script has been tested only on MacOS but not on Linux niether *BSD.
+#       This script has been tested on MacOS and Ubuntu.
 #
 # Note 2:
 #       If you don't trust this script to do sudo in your place
-#       then initialize do_sudo to "no" 
-#      
+#       then initialize do_sudo to "no"
+#
 #       do_sudo="no"
 #
 # Philippe Dax - 2024
 #
-do_sudo="no"		# change to "yes" if you trust this scipt to do sudo
+do_sudo="yes"		# change to "yes" if you trust this scipt to do sudo
 
 #if [ -f ../configure ];     then exit 0 ; fi	# assume that vreng is configured
 
@@ -30,12 +30,19 @@ log=log/by_hand.log	# log to install by hand
 
 # name of this script
 p=$(basename $0)
+if [ ! -d log ]; then mkdir log; fi
 cp /dev/null $log
+
+install_packages() {
+  echo "$p: installing packages: $@"
+  echo "$cmd $@" >>$log
+  $cmd "$@" >>$log
+}
 
 #
 # choose sudo
 #
-if [ "do_sudo" == "no" ]; then
+if [ "$do_sudo" = "no" ]; then
   sudo=""
 else
   sudo=sudo
@@ -51,7 +58,7 @@ Darwin)		# macos
   echo "$p: $dist !"
 
   ## brew
-  if [ $(which brew) ]; then
+  if which brew > /dev/null; then
     echo "$p: brew !"
     sfx=dylib
     dev=
@@ -60,14 +67,13 @@ Darwin)		# macos
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
     echo "install brew" >>$log
   fi
+  cmd="brew install"
 
   ## X11
-  if [ $(which xquartz) ]; then
+  if which xquartz > /dev/null; then
     echo "$p: xquartz !"
   else
-    echo "$p: get xquartz..."
-    echo "brew install --cask xquartz" >>$log
-    brew install --cask xquartz >>$log
+    install_packages --cask xquartz
   fi
   ret=0
   ;;
@@ -78,49 +84,61 @@ Linux)		# debian, ubuntu, mint, fedora, centos, arch
     echo "$p: $dist !"
     ret=0
   else
-    echo "$p: dist $dist unknown"
-    ret=1
+    dist=$(uname -s)
   fi
+  echo "$p: have $dist !"
 
-  ## pkg system
-  if [ $(which apt-get) ]; then
+  case $dist in
+  ubuntu|debian|linuxmint)
+    if [ -n "$sudo" ]; then
+        $sudo apt-get update
+    fi
     pkg="apt-get"
     echo "$p: apt-get !"
     cmd="$sudo apt-get install -y"
-    dev="-dev"
-    pfx=/usr
-    sfx=so
-    java="default-jdk"
-  elif [ $(which dnf) ]; then
-    pkg="dnf"
-    echo "$p: dnf !"
-    cmd="$sudo dnf install"
-    dev="-devel"
-    pfx=/usr
-    sfx=so
-    java="java-1.8.0-openjdk.x86_64"
-  elif [ $(which yum) ]; then
-    pkg="yum"
-    echo "$p: yum !"
-    cmd="$sudo yum install"
-    dev="-devel"
-    pfx=/usr
-    sfx=so
-    java="java-1.8.0-openjdk.x86_64"	# not sure
-  elif [ $(which pacman) ]; then
-    dist=arch
-    pkg="pacman"
-    echo "$p: pacman !"
-    cmd="$sudo pacman -S"
-    pfx=/usr
-    sfx=so
-    java=java	# not sure
-  else
-    echo "$p: unknown linux distrib"
-    pkg=""
-    ret=1
-    exit $ret
-  fi
+    packages="build-essential autoconf automake libtool libgl1-mesa-dev libglu1-mesa-dev libx11-dev libxmu-dev libxpm-dev libjpeg-dev libtiff-dev default-jdk doxygen graphviz libgif-dev giflib-tools libcurl4-openssl-dev bison libfreetype6-dev freeglut3-dev"
+    install_packages $packages
+    exit $?
+    ;;
+  *)
+    if which apt-get > /dev/null; then
+      cmd="$sudo apt-get install -y"
+      dev="-dev"
+      pfx=/usr
+      sfx=so
+      java="default-jdk"
+    elif which dnf > /dev/null; then
+      pkg="dnf"
+      echo "$p: dnf !"
+      cmd="$sudo dnf install"
+      dev="-devel"
+      pfx=/usr
+      sfx=so
+      java="java-1.8.0-openjdk.x86_64"
+    elif which yum > /dev/null; then
+      pkg="yum"
+      echo "$p: yum !"
+      cmd="$sudo yum install"
+      dev="-devel"
+      pfx=/usr
+      sfx=so
+      java="java-1.8.0-openjdk.x86_64"	# not sure
+    elif which pacman > /dev/null; then
+      dist=arch
+      pkg="pacman"
+      echo "$p: pacman !"
+      cmd="$sudo pacman -S"
+      pfx=/usr
+      sfx=so
+      java=java	# not sure
+    else
+      echo "$p: unknown linux distrib"
+      pkg=""
+      ret=1
+      exit $ret
+    fi
+	;;
+  esac
   ret=0
   ;;
 
@@ -135,8 +153,7 @@ Linux)		# debian, ubuntu, mint, fedora, centos, arch
 
 *)		# others to be completed
   echo "$p: unknown system"
-  ret=1
-  exit $ret
+  exit 1
   ;;
 esac
 
@@ -145,39 +162,38 @@ esac
 #
 
 ## autoconf
-if [ $(which autoconf) ]; then
+if which autoconf > /dev/null; then
   echo "$p: autoconf !"
 else
-  echo "$p: get autoconf..."
-  echo "$cmd autoconf" >>$log
-  $cmd autoconf >>$log
+  install_packages autoconf
 fi
 
 ## automake
-if [ $(which automake) ]; then
+if which automake > /dev/null; then
   echo "$p: automake !"
 else
-  echo "$p: get automake..."
-  echo "$cmd automake" >>$log
-  $cmd automake >>$log
+  install_packages automake
+fi
+
+## libtool
+if which libtool > /dev/null; then
+  echo "$p: libtool !"
+else
+  install_packages libtool
 fi
 
 ## aclocal
-if [ $(which aclocal) ]; then
+if which aclocal > /dev/null; then
   echo "$p: aclocal !"
 else
-  echo "$p: get aclocal..."
-  echo "$cmd aclocal" >>$log
-  $cmd aclocal >>$log
+  install_packages aclocal
 fi
 
 ## autoreconf
-if [ $(which autoreconf) ]; then
+if which autoreconf > /dev/null; then
   echo "$p: autoreconf !"
 else
-  echo "$p: get autoreconf..."
-  echo "$cmd autoreconf" >>$log
-  $cmd autoreconf >>$log
+  install_packages autoreconf
 fi
 
 ###################
@@ -185,21 +201,17 @@ fi
 #
 
 ## g++
-if [ $(which g++) ]; then
+if which g++ > /dev/null; then
   echo "$p: g++ !"
 else
-  echo "$p: get g++..."
-  echo "$cmd g++" >>$log
-  $cmd g++ >>$log
+  install_packages g++
 fi
 
 ## gcc
-if [ $(which gcc) ]; then
+if which gcc > /dev/null; then
   echo "$p: gcc !"
 else
-  echo "$p: get gcc..."
-  echo "$cmd gcc" >>$log
-  $cmd gcc >>$log
+  install_packages gcc
 fi
 
 ###################
@@ -211,11 +223,9 @@ pfx=$(which xinit | cut -d '/' -f 1,2,3)	# assume X11 is installed
 if [ -f $pfx/lib/libGL.$sfx ]; then
   echo "$p: libGL !"
 else
-  echo "$p: get libGL..."
-  echo "$cmd libgl$dev" >>$log
-  $cmd libgl$dev >>$log
-  $cmd libGL$dev >>$log
-  $cmd libgl1-mesa$dev >>$log # Ubuntu 24.04.1 LTS
+  install_packages libgl$dev
+  install_packages libGL$dev
+  install_packages libgl1-mesa$dev # Ubuntu 24.04.1 LTS
 fi
 
 ## libGLU
@@ -223,11 +233,9 @@ pfx=$(which xinit | cut -d '/' -f 1,2,3)	# assume X11 is installed
 if [ -f $pfx/lib/libGLU.$sfx ]; then
   echo "$p: libGLU !"
 else
-  echo "$p: get libGLU..."
-  echo "$cmd libglu$dev" >>$log
-  $cmd libglu$dev >>$log
-  $cmd libGLU$dev >>$log
-  $cmd libgl1-mesa$dev >>$log # Ubuntu 24.04.1 LTS
+  install_packages libglu$dev
+  install_packages libGLU$dev
+  install_packages libgl1-mesa$dev # Ubuntu 24.04.1 LTS
 fi
 
 ## libX11
@@ -235,9 +243,7 @@ pfx=$(which xinit | cut -d '/' -f 1,2,3)	# assume X11 is installed
 if [ -f $pfx/lib/libX11.$sfx ]; then
   echo "$p: libX11 !"
 else
-  echo "$p: get libX11..."
-  echo "$cmd libX11$dev" >>$log
-  $cmd libX11$dev >>$log
+  install_packages libX11$dev
 fi
 
 ## libXmu
@@ -245,9 +251,7 @@ pfx=$(which xinit | cut -d '/' -f 1,2,3)	# assume X11 is installed
 if [ -f $pfx/lib/libXmu.$sfx ]; then
   echo "$p: libXmu !"
 else
-  echo "$p: get libXmu..."
-  echo "$cmd libXmu$dev" >>$log
-  $cmd libXmu$dev >>$log
+  install_packages libXmu$dev
 fi
 
 ## libXpm
@@ -255,9 +259,7 @@ pfx=$(which xinit | cut -d '/' -f 1,2,3)	# assume X11 is installed
 if [ -f $pfx/lib/libXpm.$sfx ]; then
   echo "$p: libXpm !"
 else
-  echo "$p: get libXpm..."
-  echo "$cmd libXpm$dev" >>$log
-  $cmd libXpm$dev >>$log
+  install_packages libXpm$dev
 fi
 
 ## libgif
@@ -265,9 +267,7 @@ pfx=/usr/local
 if [ -f $pfx/lib/libgif.$sfx -o -f $pfx/lib/x86_64-linux-gnu/libgif.$dyl ]; then
   echo "$p: libgif !"
 else
-  echo "$p: get libgif..."
-  echo "$cmd libgif$dev" >>$log
-  $cmd libgif$dev >>$log
+  install_packages libgif$dev
 fi
 
 ## libpng
@@ -275,9 +275,7 @@ pfx=/usr/local
 if [ -f $pfx/lib/libpng.$sfx -o -f $pfx/lib/x86_64-linux-gnu/libpng.$dyl ]; then
   echo "$p: libpng !"
 else
-  echo "$p: get libpng..."
-  echo "$cmd libpng$dev" >>$log
-  $cmd libpng$dev >>$log
+  install_packages libpng$dev
 fi
 
 ## libjpeg
@@ -285,9 +283,7 @@ pfx=/usr/local
 if [ -f $pfx/lib/libjpeg.$sfx -o -f $pfx/lib/x86_64-linux-gnu/libjpeg.$dyl ]; then
   echo "$p: libjpeg !"
 else
-  echo "$p: get libjpeg..."
-  echo "$cmd libjpeg$dev" >>$log
-  $cmd libjpeg$dev >>$log
+  install_packages libjpeg$dev || install_packages jpeg$dev
 fi
 
 ## libtiff
@@ -295,9 +291,7 @@ pfx=/usr/local
 if [ -f $pfx/lib/libtiff.$sfx -o -f $pfx/lib/x86_64-linux-gnu/libtiff.so ]; then
   echo "$p: libtiff !"
 else
-  echo "$p: get libtiff..."
-  echo "$cmd libtiff$dev" >>$log
-  $cmd libtiff$dev >>$log
+  install_packages libtiff$dev || install_packages tiff$dev
 fi
 
 ## libfreetype
@@ -305,9 +299,7 @@ pfx=$(freetype-config --prefix)
 if [ -f $pfx/lib/libfreetype.$sfx -o -f /usr/local/lib/x86_64-linux-gnu/libfreetype.$dyl ]; then
   echo "$p: freetype !"
 else
-  echo "$p: get freetype..."
-  echo "$cmd freetype$dev" >>$log
-  $cmd freetype$dev >>$log
+  install_packages freetype$dev
 fi
 
 ####################
@@ -318,27 +310,21 @@ fi
 if [ $(which ocaml) ]; then
   echo "$p: ocaml !"
 else
-  echo "$p: get ocaml..."
-  echo "$cmd ocaml" >>$log
-  $cmd ocaml >>$log
+  install_packages ocaml
 fi
 
 ## sqlite3
 if [ $(which sqlite3) ]; then
   echo "$p: sqlite3 !"
 else
-  echo "$p: get sqlite3..."
-  echo "$cmd sqlite3" >>$log
-  $cmd sqlite3 >>$log
+  install_packages sqlite3
 fi
 
 ## java
 if [ $(which java) ]; then
   echo "$p: java !"
 else
-  echo "$p: get java..."
-  echo "$cmd java" >>$log
-  $cmd $java >>$log
+  install_packages $java
 fi
 
 ####################

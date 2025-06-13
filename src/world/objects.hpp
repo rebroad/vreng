@@ -23,6 +23,7 @@
 #ifndef OBJECTS_HPP
 #define OBJECTS_HPP
 
+#include "defines.hpp"	// ACTIONNAME_LEN
 #include "object.hpp"	// Object
 
 

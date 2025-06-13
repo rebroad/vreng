@@ -60,8 +60,8 @@ ubit_features=""
 #
 # Check for compiler
 #
-if test "${CFLAGS}" = ""; then CFLAGS=-O2; fi
-if test "${CXXFLAGS}" = ""; then CXXFLAGS=-O0; fi
+if test "${CFLAGS}" = ""; then CFLAGS="-g -O0 -Wall"; fi
+if test "${CXXFLAGS}" = ""; then CXXFLAGS="-g -O0 -Wall"; fi
 
 AC_LANG([C++])
 AC_PROG_CC
@@ -131,12 +131,12 @@ fi
 #
 # Check for debugging
 #
-AC_ARG_ENABLE(debug, AS_HELP_STRING([--enable-debug], [allow to debug [[default=no]]]))
-if test "${enable_debug:=no}" = "yes"; then
+AC_ARG_ENABLE(debug, AS_HELP_STRING([--disable-debug], [disable debugging [[default=yes]]]))
+if test "${enable_debug:=yes}" = "yes"; then
   if test "${GCC}" = "yes"; then
-    CFLAGS=`echo ${CFLAGS}     | sed -e 's/-O2/-DDEBUG/'`
-    CXXFLAGS=`echo ${CXXFLAGS} | sed -e 's/-O0/-DDEBUG/'`
-    LDFLAGS="`echo ${LDFLAGS}  | sed -e 's/-O0//'` -g"
+    CFLAGS="-g -O0 -Wall"
+    CXXFLAGS="-g -O0 -Wall"
+    LDFLAGS="-g"
   fi
 fi
 
@@ -905,14 +905,14 @@ have_freetype="no"
 have_freetype_and_gl="no"
 AH_TEMPLATE(WITH_FREETYPE)
 AC_CHECK_LIB([freetype],[FT_Library_Version],[have_freetype="yes"
-             [LIBS="-lfreetype $LIBS"]],
-             [AC_MSG_WARN([could not find FreeType2!, try apt|dnf|yum|brew install freetype-devel or apt-get install libfreetype6-dev])])
+[LIBS="-lfreetype $LIBS"]],
+[AC_MSG_WARN([could not find FreeType2!, try apt|dnf|yum|brew install freetype-devel or apt-get install libfreetype6-dev])])
 AC_PATH_PROG(FREETYPE_CONFIG,freetype-config)
 freetype_cflags=`$FREETYPE_CONFIG --cflags`
 FREETYPE_CFLAGS=$freetype_cflags
 AC_SUBST(FREETYPE_CFLAGS)
 freetype_libs=`$FREETYPE_CONFIG --libs`
-CPPFLAGS="$freetype_cflags $CPPFLAGS"
+CPPFLAGS="$freetype_cflags -I/usr/include/freetype2 $CPPFLAGS"
 LDFLAGS="$LDFLAGS $freetype_libs"
 if test "$have_freetype" = "yes"; then
   ubit_features="$ubit_features UBIT_WITH_FREETYPE"

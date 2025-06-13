@@ -92,6 +92,9 @@ class Txf {
   void render(int c);
   /**< render one character. */
 
+  bool isLoaded() const { return texfont != NULL; }
+  /**< check if font is loaded */
+
  private:
   char url[URL_LEN];		///< font url
   struct TexFont *texfont;	///< texfont ptr

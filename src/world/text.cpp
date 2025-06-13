@@ -94,6 +94,12 @@ bool Text::loadFont()
     error("Text: can't load font %s", name.url);
     return false;
   }
+
+  // Wait for font to be loaded
+  while (!txf->isLoaded()) {
+    usleep(10000);  // Sleep for 10ms
+  }
+
   // build the font texture
   txf->buildTexture(0, GL_TRUE);	// mipmaps true
   havefont = true;

@@ -38,7 +38,10 @@
 #endif
 #include <iostream>
 #include "ubit/ubit.hpp"
+#include <cstring>
+#include <cstdint>
 
+using namespace std;
 
 /* ==================================================== ======== ======= */
 // MESSAGES and REQUESTS
@@ -254,7 +257,7 @@ void Message::convertTextToLink(const std::string& text, char **objs, int size)
   char* mess = strdup(text.c_str());
 
   if (size < 1) {
-    error("convertTextToLink not implemented");
+    ::error("convertTextToLink not implemented");
     mess_box.add(uhbox(ugroup(mess)));
   }
   char *brkt = null;
@@ -308,7 +311,7 @@ void Message::postRequest(const std::string& mess, std::string& result)
   for (int i=0; i < sizerecv ; i++) {
     if (mess[i] == '@') {	// message begining by @
       if (nbobjs > (sizemax-2)) {
-        error("message has too many request");
+        ::error("message has too many request");
         break;
       }
       if (afficher == 0) {

@@ -121,8 +121,7 @@ void Guy::inits()
   draw();
 
   Http::httpOpen(name.url, reader, this, 0);
-
-  computeCurve();
+  // computeCurve() will be called by reader() after font is loaded
   netop = createNetObj(PROPS);
 }
 
@@ -217,6 +216,9 @@ void Guy::reader(void *_guy, Http *http)
   }
   cache->close();
   delete cache;
+
+  // Now that the font is loaded, compute the curves
+  guy->computeCurve();
   return;
 
 }

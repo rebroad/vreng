@@ -23,18 +23,20 @@
 #ifndef MESSAGE_HPP
 #define MESSAGE_HPP
 
-
+#include <cstdint>
 #include <string>
 #include <vector>
 
-#include "ubit/ubit.hpp"	// UStr
+#include "ubit/uobject.hpp"
+#include "ubit/ustr.hpp"
+#include "ubit/ubox.hpp"
+#include "ubit/uscrollpane.hpp"
 using namespace ubit;
-
 
 /**
  * Message class
  */
-class Message {
+class Message : public UObject {
  public:
   Message(class Widgets*);		///< constructor.
   ~Message() {};			///< destructor.

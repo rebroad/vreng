@@ -56,6 +56,16 @@ Txf * Txf::load(const char *url)
   // load font
   Http::httpOpen(url, reader, txf, 0);
 
+  int timeout = 5000; // 5 seconds
+  while (!txf->isLoaded() && timeout > 0) {
+    usleep(10000);  // Sleep for 10ms
+    timeout -= 10;
+  }
+  if (timeout <= 0) {
+    error("Text: font loading timeout for %s", url);
+    return NULL;
+  }
+
   return txf;
 }
 
@@ -253,10 +263,16 @@ lastchance:
         return texfont->lut[c - texfont->min_glyph];
     }
   }
+  if (isupper(c)) {
+    c = tolower(c);
+    if (c >= texfont->min_glyph && c < texfont->min_glyph + texfont->range) {
+      tgvi = texfont->lut[c - texfont->min_glyph];
+      if (tgvi) return tgvi;
+    }
+  }
+
   error("texfont: unavailable font character \"%c\" (%d)", isprint(c) ? c : ' ', c);
-  c = ' ';
-  goto lastchance;
-  /* NOTREACHED */
+  return NULL;
 }
 
 GLuint Txf::buildTexture(GLuint texobj, GLboolean setupMipmaps)
@@ -296,7 +312,11 @@ void Txf::bindTexture()
 void Txf::render(int c)
 {
   TexGlyphVertexInfo *tgvi;
-  if (! (tgvi = getGlyph(c))) return;
+  if (! (tgvi = getGlyph(c))) {
+    // If glyph not found, just advance by a reasonable amount
+    glTranslatef(0.5f, 0, 0);
+    return;
+  }
 
   glBegin(GL_QUADS);
   glTexCoord2fv(tgvi->t0);
