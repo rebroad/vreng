@@ -244,36 +244,39 @@ err:
 
 TexGlyphVertexInfo * Txf::getGlyph(int c)
 {
-  TexGlyphVertexInfo *tgvi;
+  TexGlyphVertexInfo *tgvi = NULL;
+  int original_c = c;
 
-  // Automatically substitute uppercase letters with lowercase if not
-  // uppercase available (and vice versa).
+  // Try to find the glyph for the given character
   if (c >= texfont->min_glyph && c < texfont->min_glyph + texfont->range) {
     tgvi = texfont->lut[c - texfont->min_glyph];
     if (tgvi) return tgvi;
   }
-lastchance:
-  if (c >= texfont->min_glyph && c < texfont->min_glyph + texfont->range) {
-    tgvi = texfont->lut[c - texfont->min_glyph];
-    /* NULL should be OK. */
-    if (tgvi) {
-      return tgvi;
-    } else {
-      goto lastchance;
-    }
-  }
-  if (isupper(c)) {
+
+  // Automatically substitute uppercase letters with lowercase if not
+  // available (and vice versa).
+  if (islower(c)) {
+    c = toupper(c);
+  } else if (isupper(c)) {
     c = tolower(c);
-    if (c >= texfont->min_glyph && c < texfont->min_glyph + texfont->range) {
-      tgvi = texfont->lut[c - texfont->min_glyph];
-      if (tgvi) return tgvi;
-    }
   }
 
-  error("texfont: unavailable font character \"%c\" (%d)", isprint(c) ? c : ' ', c);
+  if (c != original_c && c >= texfont->min_glyph && c < texfont->min_glyph + texfont->range) {
+    tgvi = texfont->lut[c - texfont->min_glyph];
+    if (tgvi) return tgvi;
+  }
+
+  // If the character is not available, try to use space ' ' as a fallback.
+  error("texfont: unavailable font character \"%c\" (%d)", isprint(original_c) ? original_c : ' ', original_c);
   c = ' ';
-  goto lastchance;
-  /* NOTREACHED */
+  if (c >= texfont->min_glyph && c < texfont->min_glyph + texfont->range) {
+    tgvi = texfont->lut[c - texfont->min_glyph];
+    if (tgvi) return tgvi;
+  }
+  
+  // If even space is not available, that's a problem with the font file.
+  error("texfont: could not find fallback character ' '");
+  return NULL;
 }
 
 GLuint Txf::buildTexture(GLuint texobj, GLboolean setupMipmaps)
