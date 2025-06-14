@@ -248,19 +248,18 @@ TexGlyphVertexInfo * Txf::getGlyph(int c)
 
   // Automatically substitute uppercase letters with lowercase if not
   // uppercase available (and vice versa).
+  if (c >= texfont->min_glyph && c < texfont->min_glyph + texfont->range) {
+    tgvi = texfont->lut[c - texfont->min_glyph];
+    if (tgvi) return tgvi;
+  }
 lastchance:
-  if ((c >= texfont->min_glyph) && (c < texfont->min_glyph + texfont->range)) {
-    if ((tgvi = texfont->lut[c - texfont->min_glyph]) != 0)
+  if (c >= texfont->min_glyph && c < texfont->min_glyph + texfont->range) {
+    tgvi = texfont->lut[c - texfont->min_glyph];
+    /* NULL should be OK. */
+    if (tgvi) {
       return tgvi;
-    if (islower(c)) {
-      c = toupper(c);
-      if ((c >= texfont->min_glyph) && (c < texfont->min_glyph + texfont->range))
-        return texfont->lut[c - texfont->min_glyph];
-    }
-    if (isupper(c)) {
-      c = tolower(c);
-      if ((c >= texfont->min_glyph) && (c < texfont->min_glyph + texfont->range))
-        return texfont->lut[c - texfont->min_glyph];
+    } else {
+      goto lastchance;
     }
   }
   if (isupper(c)) {
@@ -272,7 +271,9 @@ lastchance:
   }
 
   error("texfont: unavailable font character \"%c\" (%d)", isprint(c) ? c : ' ', c);
-  return NULL;
+  c = ' ';
+  goto lastchance;
+  /* NOTREACHED */
 }
 
 GLuint Txf::buildTexture(GLuint texobj, GLboolean setupMipmaps)
@@ -312,21 +313,17 @@ void Txf::bindTexture()
 void Txf::render(int c)
 {
   TexGlyphVertexInfo *tgvi;
-  if (! (tgvi = getGlyph(c))) {
-    // If glyph not found, just advance by a reasonable amount
-    glTranslatef(0.5f, 0, 0);
-    return;
-  }
+  if (! (tgvi = getGlyph(c))) return;
 
   glBegin(GL_QUADS);
   glTexCoord2fv(tgvi->t0);
-  glVertex2sv(tgvi->v0);
+  glVertex2fv(tgvi->v0);
   glTexCoord2fv(tgvi->t1);
-  glVertex2sv(tgvi->v1);
+  glVertex2fv(tgvi->v1);
   glTexCoord2fv(tgvi->t2);
-  glVertex2sv(tgvi->v2);
+  glVertex2fv(tgvi->v2);
   glTexCoord2fv(tgvi->t3);
-  glVertex2sv(tgvi->v3);
+  glVertex2fv(tgvi->v3);
   glEnd();
 
   glTranslatef(tgvi->advance, 0, 0);

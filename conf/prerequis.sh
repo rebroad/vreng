@@ -96,12 +96,15 @@ Linux)		# debian, ubuntu, mint, fedora, centos, arch
     pkg="apt-get"
     echo "$p: apt-get !"
     cmd="$sudo apt-get install -y"
-    packages="build-essential autoconf automake libtool libgl1-mesa-dev libglu1-mesa-dev libx11-dev libxmu-dev libxpm-dev libjpeg-dev libtiff-dev default-jdk doxygen graphviz libgif-dev giflib-tools libcurl4-openssl-dev bison libfreetype6-dev freeglut3-dev"
-    install_packages $packages
-    exit $?
+    dev="-dev"
+    pfx=/usr
+    sfx=so
+    java="default-jdk"
     ;;
   *)
     if which apt-get > /dev/null; then
+      pkg="apt-get"
+      echo "$p: apt-get !"
       cmd="$sudo apt-get install -y"
       dev="-dev"
       pfx=/usr

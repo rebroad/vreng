@@ -157,7 +157,7 @@ void Rtp::getRtcpEmail(char *email)
 
   gethostname(hostname, sizeof(hostname)-1);
 
-  struct hostent *ph = my_gethostbyname(hostname, AF_INET);
+  struct hostent *ph = my_gethostbyname_r(hostname, AF_INET);
   if (ph) {
     strcpy(hostfqdn, ph->h_name);
     my_free_hostent(ph);

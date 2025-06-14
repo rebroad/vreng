@@ -74,8 +74,7 @@ struct hostent * my_gethostbyname_r(const char *hostname, int af)
 {
 #if HAVE_GETIPNODEBYNAME
   return my_getipnodebyname(hostname, af);
-#else //!HAVE_GETIPNODEBYNAME
-#if HAVE_GETHOSTBYNAME_R
+#elif HAVE_GETHOSTBYNAME_R
   static struct hostent *hp;
   struct hostent ret;
   int err;
@@ -88,7 +87,6 @@ struct hostent * my_gethostbyname_r(const char *hostname, int af)
 #else //!HAVE_GETHOSTBYADDR_R
   return gethostbyname(hostname);
 #endif //HAVE_GETHOSTBYNAME_R
-#endif
 }
 
 /** my_getipnodebyname */
@@ -106,24 +104,8 @@ struct hostent * my_getipnodebyname(const char *hostname, int af)
 /** my_free_hostent */
 void my_free_hostent(struct hostent *_hp)
 {
-  // Only free if the hostent was dynamically allocated
-  // Static hostents from gethostbyname() should not be freed
-  if (!_hp) return;
-  
-  // Check if this looks like a static hostent by examining the address
-  // This is a heuristic - static hostents are usually in a different memory region
-  static struct hostent *last_static = NULL;
-  if (_hp == last_static) return;  // Don't free the same static pointer twice
-  
 #if HAVE_FREEHOSTENT
-  freehostent(_hp);
-#elif HAVE_GETIPNODEBYNAME
-  // Only free if it came from getipnodebyname
-  freehostent(_hp);
-#else
-  // For regular gethostbyname, don't free - it returns static data
-  // Only set last_static to avoid double-free attempts
-  last_static = _hp;
+  if (_hp) freehostent(_hp);
 #endif
 }
 

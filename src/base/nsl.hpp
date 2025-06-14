@@ -28,7 +28,6 @@
 #endif
 
 
-struct hostent * my_gethostbyname(const char *hostname, int af);
 struct hostent * my_gethostbyname_r(const char *hostname, int af);
 struct hostent * my_getipnodebyname(const char *hostname, int af);
 void my_free_hostent(struct hostent *hp);
