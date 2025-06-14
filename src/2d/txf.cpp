@@ -320,13 +320,13 @@ void Txf::render(int c)
 
   glBegin(GL_QUADS);
   glTexCoord2fv(tgvi->t0);
-  glVertex2fv(tgvi->v0);
+  glVertex2sv(tgvi->v0);
   glTexCoord2fv(tgvi->t1);
-  glVertex2fv(tgvi->v1);
+  glVertex2sv(tgvi->v1);
   glTexCoord2fv(tgvi->t2);
-  glVertex2fv(tgvi->v2);
+  glVertex2sv(tgvi->v2);
   glTexCoord2fv(tgvi->t3);
-  glVertex2fv(tgvi->v3);
+  glVertex2sv(tgvi->v3);
   glEnd();
 
   glTranslatef(tgvi->advance, 0, 0);
