@@ -32,7 +32,6 @@ AC_CONFIG_SRCDIR([src/base/vreng.cpp])
 
 # where to find macros m4
 AC_CONFIG_MACRO_DIR(conf)
-AC_CONFIG_AUX_DIR(conf)
 
 # canonicalizing cpu:vendor:os
 AC_CANONICAL_HOST([])
