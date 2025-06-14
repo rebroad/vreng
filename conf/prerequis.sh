@@ -15,6 +15,8 @@
 #
 # Philippe Dax - 2024
 #
+set -e
+
 do_sudo="yes"		# change to "yes" if you trust this scipt to do sudo
 
 #if [ -f ../configure ];     then exit 0 ; fi	# assume that vreng is configured
@@ -100,6 +102,29 @@ Linux)		# debian, ubuntu, mint, fedora, centos, arch
     pfx=/usr
     sfx=so
     java="default-jdk"
+
+    essential_packages="
+      g++
+      gcc
+      autoconf
+      automake
+      libtool
+      libgl1-mesa-dev
+      libglu1-mesa-dev
+      libx11-dev
+      libxmu-dev
+      libxpm-dev
+      libgif-dev
+      libpng-dev
+      libjpeg-dev
+      libtiff5-dev
+      libfreetype6-dev
+      default-jdk
+    "
+    install_packages $essential_packages
+    # Exit this case statement, as we've installed everything.
+    # The checks below are now redundant for this platform.
+    break
     ;;
   *)
     if which apt-get > /dev/null; then
@@ -140,7 +165,7 @@ Linux)		# debian, ubuntu, mint, fedora, centos, arch
       ret=1
       exit $ret
     fi
-	;;
+    ;;
   esac
   ret=0
   ;;
@@ -309,19 +334,21 @@ fi
 # Optional : ocaml, sqlite3, java
 #
 
-## ocaml
-if [ $(which ocaml) ]; then
-  echo "$p: ocaml !"
-else
-  install_packages ocaml
-fi
-
-## sqlite3
-if [ $(which sqlite3) ]; then
-  echo "$p: sqlite3 !"
-else
-  install_packages sqlite3
-fi
+# The following optional packages are not used in the project,
+# based on a search for relevant file types.
+# ## ocaml
+# if [ $(which ocaml) ]; then
+#   echo "$p: ocaml !"
+# else
+#   install_packages ocaml
+# fi
+#
+# ## sqlite3
+# if [ $(which sqlite3) ]; then
+#   echo "$p: sqlite3 !"
+# else
+#   install_packages sqlite3
+# fi
 
 ## java
 if [ $(which java) ]; then
